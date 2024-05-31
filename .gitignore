@@ -1,1 +1,7 @@
-/volumetria
+!/volumetria
+/volumetria/bin
+/volumetria/include
+/volumetria/lib
+/volumetria/lib64
+/volumetria/share
+
