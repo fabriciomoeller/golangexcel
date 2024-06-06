@@ -24,7 +24,9 @@ func converterData(numero string) time.Time {
 }
 
 type Registro struct {
+	Sistema   string    `json:"sistema"`
 	Empresa   string    `json:"empresa"`
+	Tabela    string    `json:"tabela"`
 	Data      time.Time `json:"data"`
 	Ano       string    `json:"ano"`
 	Mes       string    `json:"mes"`
@@ -50,8 +52,12 @@ func carregarDados() []Registro {
 	for _, row := range rows {
 		var registro Registro
 		for i, colCell := range row {
-			if i == 1 {
-				registro.Empresa = colCell // Assume que a primeira coluna é o nome da empresa
+			if i == 0 {
+				registro.Sistema = colCell
+			} else if i == 1 {
+				registro.Empresa = colCell
+			} else if i == 2 {
+				registro.Tabela = colCell
 			} else if _, err := strconv.Atoi(colCell); err == nil && len(colCell) == 8 {
 				registro.Data = converterData(colCell) // Assume que qualquer coluna com 8 dígitos é uma data
 				ano, mes, dia := extrairAnoMesDia(colCell)

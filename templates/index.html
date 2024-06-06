@@ -14,30 +14,86 @@
 
                 // DATA FORMATTING
                 function numberFormatter(params) {
-                var number = parseFloat(params.value);
-                var formatted = number.toLocaleString('pt-BR', {minimumFractionDigits: 0});
-                return `${formatted}`;
+                    var number = params.value? params.value : 0
+                    number = parseFloat(params.value? params.value : 0);
+                    var formatted = number.toLocaleString('pt-BR', {minimumFractionDigits: 0});
+                    return `${formatted}`;
                 }
+
+                function percentFormatter(params) {
+                    var number = params.value? params.value : 0
+                    number = parseFloat(params.value? params.value : 0);
+                    var formatted = number.toLocaleString('pt-BR', {minimumFractionDigits: 0});
+                    return `${formatted} %`;
+                }
+
                 function dateFormatter(params) {
-                var date = new Date(params.value);
-                var formatted = date.toLocaleDateString('pt-BR');
-                return formatted;
+                    var date = new Date(params.value);
+                    var formatted = date.toLocaleDateString('pt-BR');
+                    return formatted;
                 }
+
+                // Função para calcular a média da linha sobre o total da coluna
+                function calculateRowAverage(params) {
+                    
+                    if (!params.node.group && params.data) {
+                        // Obtém o valor da linha atual
+                        const rowValue = params.data.registros;
+
+                        // Obtém o ano da coluna atual
+                        const currentYear = params.data.ano;
+                        const currentMonth = params.data.mes;
+
+                        let totalSum = 0;
+
+                        // Itera apenas sobre os nós do ano atual
+                        params.api.forEachNode(function(node) {
+                            if (node.data && node.data.registros && node.data.ano === currentYear) {
+                                totalSum += node.data.registros;
+                            }
+                        });
+
+                        // Evitar divisão por zero
+                        if (totalSum === 0) return 0;
+
+                        // Calcula a média
+                        return parseFloat((rowValue / totalSum)*100);
+                    }
+                    return null;
+                    
+                }
+
+                // Comparator para pivotar os dados
+                function pivotComparator(valueA, valueB) {
+                    return valueA - valueB;
+                }
+
                 const rowData = data.map(item => ({
+                    sistema: item.sistema,
                     empresa: item.empresa,
+                    tabela: item.tabela,
                     data: item.data,
                     ano: item.ano,
                     mes: item.mes,
-                    dia: item.dia,
+                    //dia: item.dia,
                     registros: item.registros
                 }));
+
+                function cellClass(params) {
+                    return params.value > 20 ? "rag-green" : "rag-blue";
+                }
+
                 const gridOptions = {
+                    grandTotalRow: 'bottom',
+                    pivotMode: true,
                     columnDefs: [
-                        { headerName: 'Empresa', field: 'empresa', enableRowGroup: true },
+                        { headerName: 'Sistema', field: 'sistema',rowGroup: true, enableRowGroup: true },
+                        { headerName: 'Empresa', field: 'empresa',rowGroup: true, enableRowGroup: true },
+                        { headerName: 'Tabela', field: 'tabela',rowGroup: true, enableRowGroup: true },
                         { headerName: 'Data', field: 'data' },
-                        { headerName: 'Dia', field: 'dia'},
-                        { headerName: 'Ano', field: 'ano', rowGroup: true, enableRowGroup: true, enablePivot: true },
-                        { headerName: 'Mês', field: 'mes', rowGroup: true, enableRowGroup: true, enablePivot: true },
+                        { headerName: 'Ano', field: 'ano', pivot: true, enablePivot: true},
+                        //{ headerName: 'Mês', field: 'mes', pivot: true, enablePivot: true },
+                        //{ headerName: 'Dia', field: 'dia', pivot: true, enablePivot: true},
                         { headerName: 'Registros'
                             , field: 'registros'
                             , aggFunc: "sum"
@@ -45,12 +101,24 @@
                                 'text-align': 'right'
                             }
                             , valueFormatter: numberFormatter
+                            , pivotComparator: pivotComparator
+                            
+                        },
+                        { headerName: 'A.V.', aggFunc: "sum" 
+                            , valueGetter: calculateRowAverage
+                            , valueFormatter: percentFormatter
+                            , cellStyle: {
+                                'text-align': 'right',
+                            }
+                            ,cellClass: cellClass
+                            
                         }
                     ],
                     rowData,
                     rowGroupPanelShow: 'always',
                     sideBar: "columns",
                 };
+
                 const eGridDiv = document.querySelector('#myGrid');
                 new agGrid.Grid(eGridDiv, gridOptions);
             });
