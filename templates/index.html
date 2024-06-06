@@ -8,6 +8,7 @@
 <body>
     <div id="myGrid" class="ag-theme-alpine" style="height: 600px; width: 100%;"></div>
     <script>
+        
         fetch('/data')
             .then(response => response.json())
             .then(data => {
@@ -63,6 +64,34 @@
                     
                 }
 
+                // Calcule a média mensal para cada ano
+                /*function arrayValorMes(params) {
+
+                    const currentYear = params.data.ano;
+
+                    let arrayValores = [];
+                    
+                    params.api.forEachNode(function(node) {
+
+                        if (!params.node.group && params.data) {
+                            // Obtém o valor da linha atual
+                            if (node.data && node.data.registros && node.data.ano === currentYear) {
+                                    arrayValores.push(node.data.registros);
+                            }
+                        }
+                    });
+                    console.log(arrayValores)    
+                    return arrayValores;
+                }*/
+
+                // Calcule a média mensal para cada ano
+                function calculateAVGMonth(params) {
+                    if (!params.node.group && params.data) {
+                        // Obtém o valor da linha atual
+                        return rowValue = parseFloat((params.data.registros/12).toFixed(0));
+                    }
+                }
+
                 // Comparator para pivotar os dados
                 function pivotComparator(valueA, valueB) {
                     return valueA - valueB;
@@ -91,8 +120,8 @@
                         { headerName: 'Empresa', field: 'empresa',rowGroup: true, enableRowGroup: true },
                         { headerName: 'Tabela', field: 'tabela',rowGroup: true, enableRowGroup: true },
                         { headerName: 'Data', field: 'data' },
-                        { headerName: 'Ano', field: 'ano', pivot: true, enablePivot: true},
-                        //{ headerName: 'Mês', field: 'mes', pivot: true, enablePivot: true },
+                        { headerName: 'Ano', field: 'ano', pivot: true, enablePivot: true, enableRowGroup: true},
+                        { headerName: 'Mês', field: 'mes', pivot: true, enablePivot: true },
                         //{ headerName: 'Dia', field: 'dia', pivot: true, enablePivot: true},
                         { headerName: 'Registros'
                             , field: 'registros'
@@ -112,7 +141,17 @@
                             }
                             ,cellClass: cellClass
                             
+                        },
+                        { headerName: 'Média Mensal', aggFunc: "sum" 
+                            , valueGetter: calculateAVGMonth
+                            , valueFormatter: numberFormatter
+                            , cellStyle: {
+                                'text-align': 'right',
+                            }
+                            ,cellClass: cellClass
+                            
                         }
+
                     ],
                     rowData,
                     rowGroupPanelShow: 'always',

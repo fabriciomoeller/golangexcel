@@ -113,6 +113,6 @@ func main() {
 	http.HandleFunc("/data", dataHandler)
 	http.HandleFunc("/", indexHandler)
 
-	fmt.Println("Servidor iniciado em http://localhost:8080")
+	fmt.Println("Servidor iniciado em http://192.168.15.65:8080")
 	http.ListenAndServe(":8080", nil)
 }
